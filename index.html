@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Chat Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <nav class="side-nav">
+            <div class="nav-header">AI Assistant</div>
+            <div class="nav-links">
+                <a href="#" class="nav-link active">
+                    <span class="nav-icon">🎮</span>
+                    Playground
+                </a>
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">📚</span>
+                    Catalog
+                </a>
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">🤖</span>
+                    My Models
+                </a>
+            </div>
+        </nav>
+        <div id="chat-container">
+            <div id="header">
+                <h1>AI Chat Assistant</h1>
+                <div>
+                    <button id="settings-btn" onclick="toggleSettings()">⚙️</button>
+                    <button id="clear-btn" onclick="clearChat()">Clear Chat</button>
+                </div>
+            </div>
+            <div id="messages"></div>
+            <div id="input-container">
+                <div id="file-preview"></div>
+                <div class="input-row">
+                    <label for="file-input" class="file-label">
+                        📎
+                        <input 
+                            type="file" 
+                            id="file-input" 
+                            style="display: none;"
+                        >
+                    </label>
+                    <textarea 
+                        id="message-input" 
+                        placeholder="Type your message here... (Shift+Enter for new line)"
+                        rows="2"
+                        style="resize: none;"
+                    ></textarea>
+                    <button id="send-btn" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div id="settings-panel">
+        <button id="close-settings" onclick="toggleSettings()">×</button>
+        <h2 class="settings-title">Model Settings</h2>
+        
+        <div class="setting-group">
+            <label for="temperature">Temperature</label>
+            <input type="range" id="temperature" min="0" max="2" step="0.1" value="0.1">
+            <div class="value-display">0.1</div>
+        </div>
+
+        <div class="setting-group">
+            <label for="max-tokens">Max Tokens</label>
+            <input type="range" id="max-tokens" min="100" max="24000" step="100" value="8000">
+            <div class="value-display">8000</div>
+        </div>
+
+        <div class="setting-group">
+            <label for="top-p">Top P</label>
+            <input type="range" id="top-p" min="0" max="1" step="0.1" value="1">
+            <div class="value-display">1.0</div>
+        </div>
+
+        <div class="setting-group">
+            <label for="frequency-penalty">Frequency Penalty</label>
+            <input type="range" id="frequency-penalty" min="-2" max="2" step="0.1" value="0">
+            <div class="value-display">0</div>
+        </div>
+
+        <div class="setting-group">
+            <label for="presence-penalty">Presence Penalty</label>
+            <input type="range" id="presence-penalty" min="-2" max="2" step="0.1" value="0">
+            <div class="value-display">0</div>
+        </div>
+    </div>
+
+    <!-- Add this after your chat-container div -->
+    <div id="catalog-container" style="display: none;">
+        <div id="header">
+            <h1>Model Catalog</h1>
+        </div>
+        <div class="catalog-grid">
+            <div class="model-card">
+                <div class="model-icon">🤖</div>
+                <h3>GPT-4</h3>
+                <p>Most capable model, great for complex tasks</p>
+                <div class="model-stats">
+                    <span>Context: 32k</span>
+                    <span>Updated: Mar 2024</span>
+                </div>
+                <button class="select-model-btn">Select Model</button>
+            </div>
+            <div class="model-card">
+                <div class="model-icon">👁️</div>
+                <h3>GPT-4V</h3>
+                <p>Vision capabilities for image understanding</p>
+                <div class="model-stats">
+                    <span>Context: 128k</span>
+                    <span>Updated: Mar 2024</span>
+                </div>
+                <button class="select-model-btn">Select Model</button>
+            </div>
+            <div class="model-card">
+                <div class="model-icon">⚡</div>
+                <h3>GPT-3.5 Turbo</h3>
+                <p>Fast and efficient for most tasks</p>
+                <div class="model-stats">
+                    <span>Context: 16k</span>
+                    <span>Updated: Mar 2024</span>
+                </div>
+                <button class="select-model-btn">Select Model</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get container references
+            const chatContainer = document.getElementById('chat-container');
+            const catalogContainer = document.getElementById('catalog-container');
+
+            // Add click handlers for navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    console.log('Nav clicked:', link.textContent.trim()); // Debug log
+
+                    // Remove active class from all links
+                    document.querySelectorAll('.nav-link').forEach(l => 
+                        l.classList.remove('active'));
+                    // Add active class to clicked link
+                    link.classList.add('active');
+                    
+                    // Handle navigation
+                    //make a new string of the link using only hte text and not the icon
+                    const section = link.textContent.trim().replace(/<span class="nav-icon">.*<\/span>/, '');
+                    
+                    
+                    console.log('Switching to section:', section); // Debug log
+
+                    switch(section) {
+                        case 'Playground':
+                            chatContainer.style.display = 'flex';
+                            catalogContainer.style.display = 'none';
+                            console.log('Switched to Playground'); // Debug log
+                            break;
+                        case 'Catalog':
+                            chatContainer.style.display = 'none';
+                            catalogContainer.style.display = 'flex';
+                            console.log('Switched to Catalog'); // Debug log
+                            break;
+                        default:
+                            console.log('Unknown section:', section); // Debug log
+                    }
+                });
+            });
+
+            // Add click handlers for model selection
+            document.querySelectorAll('.select-model-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const modelName = btn.parentElement.querySelector('h3').textContent;
+                    alert(`Selected model: ${modelName}`);
+                    // Switch back to playground
+                    document.querySelector('.nav-link').click();
+                });
+            });
+
+            // Debug check for elements
+            console.log('Chat container:', chatContainer);
+            console.log('Catalog container:', catalogContainer);
+            console.log('Nav links:', document.querySelectorAll('.nav-link'));
+        });
+    </script>
+</body>
+</html>
